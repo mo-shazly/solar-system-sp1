@@ -2,22 +2,11 @@ name: Destroy Terraform Infrastructure
 
 on:
   workflow_dispatch:
-    inputs:
-      confirm_destroy:
-        description: "Type 'yes' to confirm destruction"
-        required: true
-        default: "no"
-      workspace:
-        description: "Terraform workspace (e.g., default, stage, prod)"
-        required: false
-        default: "default"
 
 jobs:
   terraform-destroy:
     name: Destroy Environment
     runs-on: ubuntu-latest
-    environment: production
-    if: ${{ github.event.inputs.confirm_destroy == 'yes' }}
 
     steps:
       - name: Checkout repository
@@ -44,17 +33,6 @@ jobs:
             -backend-config="dynamodb_table=terraform-lock" \
             -backend-config="encrypt=true" \
             -reconfigure
-
-
-      - name: Select Workspace
-        run: |
-          terraform workspace select ${{ github.event.inputs.workspace }} || terraform workspace new ${{ github.event.inputs.workspace }}
-
-      - name: List Resources in State
-        run: terraform state list || echo "No resources found in state."
-
-      - name: Terraform Plan (Destroy)
-        run: terraform plan -destroy
 
       - name: Terraform Destroy
         run: terraform destroy -auto-approve
