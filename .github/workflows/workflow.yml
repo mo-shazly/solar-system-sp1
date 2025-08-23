@@ -2,10 +2,10 @@ name: soalr system workflow
 
 on:
     workflow_dispatch:
-    push:
-       branches:
-            - feature-brancheA
-            - main
+    # push:
+    #    branches:
+    #         - feature-brancheA
+    #         - main
       
 env: 
     MONGO_URI: 'mongodb+srv://supercluster.d83jj.mongodb.net/superData'
