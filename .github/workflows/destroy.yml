@@ -26,7 +26,8 @@ jobs:
 
       - name: Terraform Init
         run: |
-            cd infra
+            mkdir infra
+            cd infa
             terraform init \
             -backend-config="bucket=stagebucket12" \
             -backend-config="key=stage-eks1/terraform.tfstate" \
@@ -36,4 +37,6 @@ jobs:
             -reconfigure
 
       - name: Terraform Destroy
-        run: terraform destroy -auto-approve
+        run: |
+         cd infra
+         terraform destroy -auto-approve
