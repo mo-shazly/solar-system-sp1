@@ -26,6 +26,7 @@ jobs:
 
       - name: Terraform Init
         run: |
+            cd infra
             terraform init \
             -backend-config="bucket=stagebucket12" \
             -backend-config="key=stage-eks1/terraform.tfstate" \
