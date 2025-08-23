@@ -37,10 +37,14 @@ jobs:
 
       - name: Terraform Init
         run: |
-         2" \
+            terraform init \
+            -backend-config="bucket=stagebucket12" \
+            -backend-config="key=stage-eks1/terraform.tfstate" \
+            -backend-config="region=us-west-2" \
             -backend-config="dynamodb_table=terraform-lock" \
             -backend-config="encrypt=true" \
             -reconfigure
+
 
       - name: Select Workspace
         run: |
