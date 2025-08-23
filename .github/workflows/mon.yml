@@ -77,7 +77,7 @@ jobs:
                  cluster: stage-eks-cluster
 
             - name: create monitoring namespace
-              run: kubectl create namespace monitoring --dry-run=client -o yaml | kubectl apply -f
+              run: kubectl create namespace monitoring --dry-run=client -o yaml 
 
             - name: Add Helm repos
               run: |
