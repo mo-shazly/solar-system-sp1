@@ -1,64 +1,44 @@
-name: Destroy Terraform Infrastructure
+name: 'Terraform Destroy'
 
 on:
   workflow_dispatch:
     inputs:
-      confirm_destroy:
-        description: "Type 'yes' to confirm destruction"
+      destroy:
+        description: 'Destroy infrastructure?'
         required: true
-        default: "no"
-      workspace:
-        description: "Terraform workspace (e.g., default, stage)"
-        required: false
-        default: "default"
+        type: boolean
 
 jobs:
   terraform-destroy:
-    name: Destroy Environment
+    name: 'Terraform Destroy'
     runs-on: ubuntu-latest
     environment: production
-    if: ${{ github.event.inputs.confirm_destroy == 'yes' }}
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v2
+      # Checkout the repository to access the Terraform configuration files
+      - name: Checkout code
+        uses: actions/checkout@v5
 
-      - name: Set up AWS credentials
-        uses: aws-actions/configure-aws-credentials@v1
+      # Configure AWS credentials for the workflow
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4.3.1
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-west-2
-
-      - name: Set up Terraform
-        uses: hashicorp/setup-terraform@v2
+    
+      # Set up the Terraform CLI
+      - name: HashiCorp - Setup Terraform
+        uses: hashicorp/setup-terraform@v3.1.2
         with:
-          terraform_version: 1.4.4
+          terraform_version: "1.1.7"
 
+      # Initialize Terraform, which is required to access the remote state
       - name: Terraform Init
-        working-directory: terraform/eks
-        run: |
-          terraform init \
-            -backend-config="bucket=stagebucket12" \
-            -backend-config="key=stage-eks1/terraform.tfstate" \
-            -backend-config="region=us-west-2" \
-            -backend-config="dynamodb_table=terraform-lock" \
-            -backend-config="encrypt=true" \
-            -reconfigure
+        run: terraform init
+        working-directory: ./Terraform
 
-      - name: Select Workspace
-        working-directory: terraform/eks
-        run: |
-          terraform workspace select ${{ github.event.inputs.workspace }} || terraform workspace new ${{ github.event.inputs.workspace }}
-
-      - name: List Resources in State
-        working-directory: terraform/eks
-        run: terraform state list || echo "No resources found in state."
-
-      - name: Terraform Plan (Destroy)
-        working-directory: terraform/eks
-        run: terraform plan -destroy
-
+      # Run the terraform destroy command to remove the infrastructure
       - name: Terraform Destroy
-        working-directory: terraform/eks
         run: terraform destroy -auto-approve
+        working-directory: ./Terraform
