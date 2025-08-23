@@ -76,8 +76,12 @@ jobs:
                  region: us-west-2
                  cluster: stage-eks-cluster
 
-            - name: create monitoring namespace
-              run: kubectl create namespace monitoring --dry-run=client -o yaml 
+            - name: Output monitoring namespace YAML
+              run: kubectl create namespace monitoring --dry-run=client -o yaml
+
+            - name: Create monitoring namespace
+              run: kubectl create namespace monitoring || true
+
 
             - name: Add Helm repos
               run: |
