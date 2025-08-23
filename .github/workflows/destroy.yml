@@ -7,6 +7,10 @@ on:
         description: "Type 'yes' to confirm destruction"
         required: true
         default: "no"
+      workspace:
+        description: "Terraform workspace (e.g., default, stage, prod)"
+        required: false
+        default: "default"
 
 jobs:
   terraform-destroy:
@@ -14,6 +18,7 @@ jobs:
     runs-on: ubuntu-latest
     environment: production
     if: ${{ github.event.inputs.confirm_destroy == 'yes' }}
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
@@ -32,13 +37,17 @@ jobs:
 
       - name: Terraform Init
         run: |
-          terraform init \
-            -backend-config="bucket=stagebucket12" \
-            -backend-config="key=stage-eks1/terraform.tfstate" \
-            -backend-config="region=us-west-2" \
+         2" \
             -backend-config="dynamodb_table=terraform-lock" \
             -backend-config="encrypt=true" \
             -reconfigure
+
+      - name: Select Workspace
+        run: |
+          terraform workspace select ${{ github.event.inputs.workspace }} || terraform workspace new ${{ github.event.inputs.workspace }}
+
+      - name: List Resources in State
+        run: terraform state list || echo "No resources found in state."
 
       - name: Terraform Plan (Destroy)
         run: terraform plan -destroy
