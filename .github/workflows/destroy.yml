@@ -2,11 +2,22 @@ name: Destroy Terraform Infrastructure
 
 on:
   workflow_dispatch:
+    inputs:
+      confirm_destroy:
+        description: "Type 'yes' to confirm destruction"
+        required: true
+        default: "no"
+      workspace:
+        description: "Terraform workspace (e.g., default, stage)"
+        required: false
+        default: "default"
 
 jobs:
   terraform-destroy:
     name: Destroy Environment
     runs-on: ubuntu-latest
+    environment: production
+    if: ${{ github.event.inputs.confirm_destroy == 'yes' }}
 
     steps:
       - name: Checkout repository
@@ -25,10 +36,9 @@ jobs:
           terraform_version: 1.4.4
 
       - name: Terraform Init
+        working-directory: terraform/eks
         run: |
-            mkdir infra
-            cd infra
-            terraform init \
+          terraform init \
             -backend-config="bucket=stagebucket12" \
             -backend-config="key=stage-eks1/terraform.tfstate" \
             -backend-config="region=us-west-2" \
@@ -36,7 +46,19 @@ jobs:
             -backend-config="encrypt=true" \
             -reconfigure
 
-      - name: Terraform Destroy
+      - name: Select Workspace
+        working-directory: terraform/eks
         run: |
-         cd infra
-         terraform destroy -auto-approve
+          terraform workspace select ${{ github.event.inputs.workspace }} || terraform workspace new ${{ github.event.inputs.workspace }}
+
+      - name: List Resources in State
+        working-directory: terraform/eks
+        run: terraform state list || echo "No resources found in state."
+
+      - name: Terraform Plan (Destroy)
+        working-directory: terraform/eks
+        run: terraform plan -destroy
+
+      - name: Terraform Destroy
+        working-directory: terraform/eks
+        run: terraform destroy -auto-approve
