@@ -1,6 +1,6 @@
 name: depoly monitoring
 on:
-    push:
+    workflow_dispatch:
 
 jobs:
     deploy:
