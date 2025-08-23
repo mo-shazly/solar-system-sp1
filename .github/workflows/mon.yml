@@ -1,6 +1,6 @@
 name: depoly monitoring
 on:
-    workflow_dispatch:
+    push:
 
 jobs:
     deploy:
@@ -111,6 +111,11 @@ jobs:
                 kubectl -n monitoring get svc kube-prometheus-stack-grafana -o jsonpath='{.status.loadBalancer.ingress[0].hostname}{"\n"}{.status.loadBalancer.ingress[0].ip}{"\n"}'
                 echo "Prometheus URL:"
                 kubectl -n monitoring get svc kube-prometheus-stack-prometheus -o jsonpath='{.status.loadBalancer.ingress[0].hostname}{"\n"}{.status.loadBalancer.ingress[0].ip}{"\n"}'
+
+            - name: Verify Deployment
+              run: |
+                kubectl get pods  
+                kubectl get svc
 
                     
 
